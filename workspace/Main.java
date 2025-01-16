@@ -1,3 +1,8 @@
+//
+//  Class author:  Noah Raigrodski
+//  Date due:  1/14/25
+//  General description: This class uses a GUI and the Country class to make a quiz game where you guess certain attributes of a Country
+//
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -11,21 +16,26 @@ public class Main
   private Country[] countryArray = new Country[10];  
   // index of current shown country
   private int index = 0;
+  private int questIndex = 0;
 
   // GUI elements
   private JFrame jFrame = new JFrame("Countries");
   private ImageIcon img;
   private JLabel imageLabel;
   private JLabel outputLabel;
+  private JTextField input;
   
   public static void main(String[] args) {
     // Create the GUI
     Main gui = new Main();
     gui.loadCountries();
-    gui.showCountry();
   }
 
-  /* loadCountries() reads in the data from the countries-data.csv file and fills in the countryArray with data. You need to add the loop that reads in the country data into the array. */
+  // loadCountries() reads in the data from the countries-data.csv file and fills in the countryArray with data.
+  //
+	// Pre-condition: none
+	// Post-condition: an array of Country objects is created
+	//
   public void loadCountries() 
   {
     // Open the data file - do not change
@@ -37,50 +47,91 @@ public class Main
         System.out.println("File not found");     
     }
     
-    // Write a for loop that goes through the countryArray.
-    // for(int i ....) {
-    // Do the following inside the loop
+     for (int i = 0; i < countryArray.length; i++) {
       String input = scan.nextLine();
       String[] data = input.split(",");
       System.out.println("Read in " + data[0]);
-      // inside the loop, create a new Country using your constructor with 4 arguments and pass in data[0], data[1], data[2], data[3] as arguments.
-     // inside the loop, set countryArray[i] to the created Country object
+      Country newCountry = new Country(data[0], data[1], data[2], data[3]);
+      countryArray[i] = newCountry;
+    }
      
     
   }
 
-  /* showCountry() will show the image associated with the current country. It should get the country at index from the countryArray. It should use its get method to get its image file name and use the code below to put the image in the GUI.
-  */
+  //
+	// Pre-condition: a countryArray exists
+	// Post-condition: The image displayed in the GUI is updated
+	//
   public void showCountry() {
     // Get the country at index from countryArray
-    
-    // Use its get method to get the its image file name and save it into imagefile variable below instead of worldmap.jpg.
-    String imagefile = "worldmap.jpg";
+    // Use its get method to get the its image file name and save it into imagefile
+    // variable below instead of worldmap.jpg.
+    String imagefile = countryArray[index].getImageFile();
     // Use the following code to create an new Image Icon and put it into the GUI
     img = new ImageIcon("/workspaces/Countries/workspace/"+imagefile);
     imageLabel.setIcon(img);
   }
   
-  /* nextButton should increment index. If the index is greater than 9, reset it back to 0. Clear the outputLabel to empty string using setText, and call showCountry();*/
-  public void nextButtonClick()
-  {
-    
+  //
+	// Pre-condition: None
+	// Post-condition: Index is increased or reset to 0, output and input labels are cleared, showCountry is called
+	//
+  public void nextButtonClick() {
+    index += 1;
+    if (index > 9) {
+      index = 0;
+    }
+
+    outputLabel.setText("");
+    input.setText("");
+    showCountry();
   }
   
-  /* reviewButton should get the country at index from the countryArray, call its toString() method and save the result, print it out with System.out.println and as an argument to outputLabel.setText( text to print out ); */
-  public void reviewButtonClick()
-  {
-     
+  //
+	// Pre-condition: A countryArray exists
+	// Post-condition: The toString method for Country objects is called and displayed on the GUI
+	//
+  public void reviewButtonClick() {
+    String toString = countryArray[index].toString();
+    System.out.println(toString);
+    outputLabel.setText(toString);
   }
 
-  /* quizButton should clear the outputLabel (outputLabel.setText to empty string), get the country at index from countryArray, print out a question about it like What country is this? and/or What's this country's capital?. Get the user's answer using scan.nextLine() and check if it is equal to the country's data using its get methods and print out correct or incorrect.
-  */
-  public void quizButtonClick()
-  {
-    Scanner scan = new Scanner(System.in); 
-    
-    
-    
+  //
+	// Pre-condition: None
+	// Post-condition: questIndex is assigned a random value, a question is chosen from the questions array, that question is displayed
+	//
+  public void quizButtonClick() {
+    input.setText("");
+    String[] questions = new String[] {"What country is this?", "What is the primary language spoken in this country?", "What is this country's capital?"};
+    questIndex = (int)(Math.random()*3);
+
+    outputLabel.setText(questions[questIndex]);
+    System.out.println(questions[questIndex]);
+    showCountry();
+  }
+
+  //
+	// Pre-condition: None
+	// Post-condition: The GUI is updated to display whether the user's answer was correct or not
+	//
+  public void confirmButtonClick() {
+    String answer = "";
+    if (questIndex == 0){
+      answer = countryArray[index].getName();
+    }
+    else if (questIndex == 1){
+      answer = countryArray[index].getLanguage();
+    }
+    else if (questIndex == 2){
+      answer = countryArray[index].getCapital();
+    }
+
+    if (input.getText().contentEquals(answer)) {
+      outputLabel.setText("Correcto!");
+    } else {
+      outputLabel.setText("Falso! The answer was " + answer);
+    }  
   }
 
 
@@ -96,12 +147,14 @@ public Main() {
         JButton reviewButton = new JButton("Review");
         JButton quizButton = new JButton("Quiz");
         JButton newButton = new JButton("Next");
+        JButton confirmButton = new JButton("Confirm");
         jFrame.add(reviewButton);
         jFrame.add(quizButton);
         jFrame.add(newButton);
+        jFrame.add(confirmButton);
         
         // create a new image icon
-        img = new ImageIcon("worldmap.jpg");
+        img = new ImageIcon("/workspaces/Countries/workspace/worldmap.jpg");
         // create a label to display image
         imageLabel = new JLabel(img);
         // and one for output
@@ -109,6 +162,10 @@ public Main() {
         jFrame.add(imageLabel);
         jFrame.add(outputLabel);
         jFrame.setVisible(true);
+
+        input = new JTextField(20);
+        jFrame.add(input);
+
         // add event listener for button click
         reviewButton.addActionListener(new ActionListener() {
     public void actionPerformed(ActionEvent e) 
@@ -129,6 +186,13 @@ public Main() {
       nextButtonClick();
     }
    });
+
+   confirmButton.addActionListener(new ActionListener() {
+    public void actionPerformed(ActionEvent e) {
+      confirmButtonClick();
+    }
+  });
+   
 }
   
 
